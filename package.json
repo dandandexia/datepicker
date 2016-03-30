@@ -1,0 +1,36 @@
+{
+  "name": "datepicker",
+  "version": "1.0.0",
+  "description": "库存日历、价格日历生成组件",
+  "main": "gulpfile.js",
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-connect": "^3.2.2",
+    "jsx-loader": "^0.13.2",
+    "tapable": "^0.2.4",
+    "webpack": "^1.12.14",
+    "jquery": "^2.2.2",
+    "handlebars": "^4.0.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fightingeverysecond/datepicker.git"
+  },
+  "keywords": [
+    "价格日历、库存日历"
+  ],
+  "author": "matt.liu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fightingeverysecond/datepicker/issues"
+  },
+  "homepage": "https://github.com/fightingeverysecond/datepicker"
+  
+}
