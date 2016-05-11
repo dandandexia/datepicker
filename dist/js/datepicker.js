@@ -7,18 +7,18 @@ webpackJsonp([0,1],[
 	 *  @lastModify：matt.liu
 	 *  @lastModiftDate: 2016-03-02
 	 *  @fileoverview: 库存日历组件,进行展示有效期呢的库存,最长有效期为12个月（跨年一次）
-	 *  @others: 依赖jquery, handlebars
+	 *  @others: 原生js
 	 */
-	 'use strict'
+	'use strict'
 	__webpack_require__(1);
 	var datepickerTmp = __webpack_require__(20);
-	function InventoryDatepicker(obj) {
+	function Datepicker(obj) {
 		//用户可配置属性
 		this.options = {
 			$dom: document.body, //放置日历的dom
 			startTime: new Date().getTime(), //开始时间，为毫秒数
 			endTime: new Date().getTime(), //结束时间
-			// otherData: null//要在日历上展示的其他信息，格式必须为下列格式
+			//要在日历上展示的其他信息，格式必须为下列格式
 			otherData: {
 				// "2016-02-28" : {
 				//     "stockId": 1,     //库存Id，保存更新时使用
@@ -33,7 +33,7 @@ webpackJsonp([0,1],[
 			}
 		};
 		//配置项，需要包括$dom
-		this.options = extend(true, this.options, obj.options);
+		this.options = this.extend(true, this.options, obj.options);
 		//初始日历数据
 		this.initData = [];
 		//渲染页面的数据
@@ -50,12 +50,11 @@ webpackJsonp([0,1],[
 		this.formatEndDay = null;
 		//需要渲染的数据
 		this.renderData = [];
-
 		this.preData = {};
 		this.init();
 	}
-	InventoryDatepicker.prototype = {
-		constructor: InventoryDatepicker,
+	Datepicker.prototype = {
+		constructor: Datepicker,
 		init: function() {
 			//判断数据合法性
 			var isLegal = this.checkIsLegal();
@@ -66,7 +65,6 @@ webpackJsonp([0,1],[
 			this.formatStartDay = this.formatDate(this.options.startTime);
 			this.formatEndDay = this.formatDate(this.options.endTime);
 			this.isAcross = this.formatStartDay.year !== this.formatEndDay.year;
-
 			this.getDatepickData();
 			this.render();
 		},
@@ -74,13 +72,11 @@ webpackJsonp([0,1],[
 		//渲染日历组件
 		render: function() {
 			var html = Handlebars.compile(datepickerTmp);
-			//console.log(html);
 			this.options.$dom.innerHTML = html({
 				data: this.formatRenderData()
 			});
+			
 		},
-
-		//extend: function()
 
 		//处理所需展示的日历数据
 		getDatepickData: function() {
@@ -93,7 +89,7 @@ webpackJsonp([0,1],[
 				//第一个月日历中含有的上个月的天数
 				startLastMonthDay = startDay.oneDay || 7,
 				//最后一个月日历中含有的下个月的天数
-				endLastDay = 7 - (me.startMonthArr[endMonth] + endDay.oneDay) % 7 || 7,
+				endLastDay = 7 - (me.endMonthArr[endMonth] + endDay.oneDay) % 7,
 				data = {},
 				//开始日期的上个月
 				startLastMonth = startMonth < 10 ? '0' + startMonth : startMonth,
@@ -102,34 +98,37 @@ webpackJsonp([0,1],[
 				thisMonth,
 				//当月的天数
 				thisDaysNum;
+			if (endLastDay + me.endMonthArr[endMonth] + endDay.oneDay < 42) {
+				endLastDay += 7;
+			}
 			//渲染有效期内的日期
-			var setDate = function(start, end) {
-					for (var i = start; i <= end; i++) {
-						thisMonth = (i + 1) > 10 ? i + 1 : '0' + (i + 1);
-						thisDaysNum = me.startMonthArr[i];
-						for (var k = 1; k <= thisDaysNum; k++) {
-							k = k < 10 ? '0' + k : k;
-							data[startDay.year + '-' + thisMonth + '-' + k] = {
-								year: startDay.year,
-								isShow: true,
-								month: parseInt(thisMonth),
-								text: parseInt(k), //显示数字
-								date: startDay.year + '-' + thisMonth + '-' + k
-							}
-							k = parseInt(k);
+			var setDate = function(start, end){
+				for(var i = start; i <= end; i++){
+					thisMonth = (i + 1) > 10 ? i + 1 : '0' + (i + 1);
+					thisDaysNum = me.startMonthArr[i];
+					for (var k = 1; k <= thisDaysNum; k ++ ) {
+						k = k < 10 ? '0' + k : k;
+						data[startDay.year + '-' + thisMonth + '-' + k] = {
+							year: startDay.year,
+							isShow: true,
+							month: Number(thisMonth),
+							text: Number(k), //显示数字
+							date: startDay.year + '-' + thisMonth + '-' + k
 						}
+						k = Number(k);
 					}
 				}
-				//第一个月份日历中含有的上个月的数据
-			for (; startLastMonthDay > 0; startLastMonthDay--) {
+			}
+			//第一个月份日历中含有的上个月的数据
+			for(startLastDaysNum = startLastDaysNum - startLastMonthDay;startLastMonthDay > 0; startLastMonthDay--) {
+				startLastDaysNum ++;
 				data[startDay.year + '-' + startLastMonth + '-' + startLastDaysNum] = {
 					year: startDay.year,
 					isShow: false, //是否置灰
-					month: parseInt(startLastMonth),
+					month: Number(startLastMonth),
 					text: startLastDaysNum, //显示数字
 					date: startDay.year + '-' + startLastMonth + '-' + startLastDaysNum
 				}
-				startLastDaysNum--;
 			}
 
 			//有效期内的数据
@@ -138,19 +137,34 @@ webpackJsonp([0,1],[
 			} else {
 				//如果有跨年，不同年的分开渲染
 				setDate(startMonth, 11);
-				setDate(0, endMonth);
+				for(var i = 0; i <= endMonth; i++){
+					thisMonth = (i + 1) > 10 ? i + 1 : '0' + (i + 1);
+					thisDaysNum = me.endMonthArr[i];
+					for (var k = 1; k <= thisDaysNum; k ++ ) {
+						k = k < 10 ? '0' + k : k;
+						data[endDay.year + '-' + thisMonth + '-' + k] = {
+							year: endDay.year,
+							isShow: true,
+							month: Number(thisMonth),
+							text: Number(k), //显示数字
+							date: endDay.year + '-' + thisMonth + '-' + k
+						}
+						k = Number(k);
+					}
+				}
 			}
 			//最后一个月份日历中含有的下个月的数据
-			for (var i = 1; i <= endLastDay; i++) {
+			for(var i = 1; i <= endLastDay; i++) {
 				data[endDay.year + '-' + endNextMonth + '-0' + i] = {
 					isShow: false, //是否置灰
-					month: parseInt(endNextMonth),
-					text: parseInt(i), //显示数字
-					date: endDay.year + '-' + endNextMonth + '-' + i
+					month: Number(endNextMonth),
+					text: Number(i), //显示数字
+					date: endDay.year + '-' + endNextMonth + '-' + i,
+					year: endDay.year
 				}
 			}
 			if (this.options.otherData && !$.isEmptyObject(this.options.otherData)) {
-				data = extend(true, {}, data, this.options.otherData);
+				data = this.extend(true, {}, data, this.options.otherData);
 			}
 			this.formatData(data);
 		},
@@ -187,20 +201,20 @@ webpackJsonp([0,1],[
 			var me = this,
 				data = {},
 				year = this.formatStartDay.year,
-				firstMonth = this.formatStartDay.month > 9 ? this.formatStartDay.month + 1 : '0' + (this.formatStartDay.month + 1),
+				firstMonth = this.formatStartDay.month > 9 ? this.formatStartDay.month+1 : '0' + (this.formatStartDay.month+1),
 				thisMonth,
 				month,
 				lastMonthDay = this.formatStartDay.oneDay || 7,
 				_index,
-				lastWeekIndex; //当前月份最后一周的索引
+				lastWeekIndex;//当前月份最后一周的索引
 			data[year + '-' + firstMonth] = {
 				year: year,
-				month: parseInt(firstMonth),
-				datepicker: this.initShowData(this.initData.slice(0, 42), parseInt(firstMonth))
+				month: Number(firstMonth),
+				datepicker: this.initShowData(this.initData.slice(0, 42), Number(firstMonth))
 			};
 			_index = 42;
-			lastWeekIndex = Math.ceil((this.startMonthArr[this.formatStartDay.month] + lastMonthDay) / 7);
-
+			lastWeekIndex = Math.ceil((this.startMonthArr[this.formatStartDay.month] + lastMonthDay)/7);
+			
 			var loopData = function(startIndex, endIndex) {
 				for (var i = startIndex; i < endIndex; i++) {
 					month = i < 9 ? '0' + (i + 1) : i + 1;
@@ -209,20 +223,20 @@ webpackJsonp([0,1],[
 					data[year + '-' + month] = {
 						year: year,
 						month: thisMonth.month + 1,
-						datepicker: me.initShowData(me.initData.slice(_index - (7 - lastWeekIndex) * 7, _index - (7 - lastWeekIndex) * 7 + 42), thisMonth.month + 1)
+						datepicker: me.initShowData(me.initData.slice(_index - (7-lastWeekIndex)*7, _index - (7-lastWeekIndex)*7 + 42), thisMonth.month + 1)
 					}
-					_index = _index - (7 - lastWeekIndex) * 7 + 42;
-					lastWeekIndex = Math.ceil((me.startMonthArr[i] + lastMonthDay) / 7);
+					_index = _index - (7-lastWeekIndex)*7 + 42;
+					lastWeekIndex = Math.ceil((me.startMonthArr[i] + lastMonthDay)/7);
 				}
 			}
 
-			if (!this.isAcross) {
-				loopData(this.formatStartDay.month + 1, this.formatEndDay.month + 1);
+			if (!this.isAcross){
+				loopData(this.formatStartDay.month + 1, this.formatEndDay.month+1);
 			} else {
 				loopData(this.formatStartDay.month + 1, 12);
 				year = this.formatEndDay.year;
-				loopData(0, this.formatEndDay.month);
-
+				loopData(0, this.formatEndDay.month + 1);
+				
 			}
 			return data;
 		},
@@ -235,14 +249,8 @@ webpackJsonp([0,1],[
 			var newData = [],
 				today = this.formatDate(),
 				weekArr = [];
-			// $.each(data, function(i, item) {
-			// 	newData.push(extend({}, item));
-			// 	if (item.month !== month || (item.text < today.date && item.month === today.month + 1)) {
-			// 		newData[i].isShow = false;
-			// 	}
-			// })
 			for (var i = 0, len = data.length; i < len; i ++) {
-				newData.push(extend({}, data[i]));
+				newData.push(this.extend({}, data[i]));
 				if (data[i].month !== month || (data[i].text < today.date && data[i].month === today.month + 1)) {
 					newData[i].isShow = false;
 				}
@@ -254,8 +262,8 @@ webpackJsonp([0,1],[
 		},
 
 		//解析日期
-		formatDate: function(date) {
-			var time = date ? new Date(date) : new Date(),
+		formatDate: function(date){
+			var time = date ? new Date(date) :new Date(),
 				year = time.getFullYear(),
 				month = time.getMonth(),
 				date = time.getDate(),
@@ -265,7 +273,7 @@ webpackJsonp([0,1],[
 				month: month,
 				date: date,
 				day: day,
-				oneDay: Math.abs(date % 7 - day - 1) //本月的第一天对应的星期几
+				oneDay: day > (date-1) % 7 ? day - (date-1) % 7 : 7 - ((date-1) % 7 - day) //本月的第一天对应的星期几
 			}
 		},
 
@@ -332,7 +340,7 @@ webpackJsonp([0,1],[
 
 	}
 
-	module.exports = InventoryDatepicker;
+	module.exports = Datepicker;
 
 /***/ },
 /* 1 */

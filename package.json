@@ -31,6 +31,8 @@
   "bugs": {
     "url": "https://github.com/fightingeverysecond/datepicker/issues"
   },
-  "homepage": "https://github.com/fightingeverysecond/datepicker"
-  
+  "homepage": "https://github.com/fightingeverysecond/datepicker",
+  "devDependencies": {
+    "gulp-uglify": "^1.5.3"
+  }
 }
